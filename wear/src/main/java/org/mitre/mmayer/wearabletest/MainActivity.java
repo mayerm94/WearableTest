@@ -20,6 +20,8 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import org.mitre.hossenlopp.buttongameshared.ArcView;
+
 public class MainActivity extends Activity implements
         DataApi.DataListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -30,7 +32,10 @@ public class MainActivity extends Activity implements
 
 
     private GoogleApiClient mGoogleApiClient;
-    private int count = 0;
+    private int count = 1;
+    private int theirCount = 1;
+
+    private ArcView mTugbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +47,11 @@ public class MainActivity extends Activity implements
             @Override
             public void onClick(View v) {
                 sendCountUpdate();
+                updateCount();
             }
         });
+
+        mTugbar = (ArcView) findViewById(R.id.tugbar);
 
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -98,7 +106,8 @@ public class MainActivity extends Activity implements
                 }*/
                 if (item.getUri().getPath().compareTo("/count") == 0) {
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    updateCount(dataMap.getInt(COUNT_KEY));
+                    theirCount = dataMap.getInt(COUNT_KEY);
+                    updateCount();
                 }
             } else if (event.getType() == DataEvent.TYPE_DELETED) {
                 // DataItem deleted
@@ -107,15 +116,23 @@ public class MainActivity extends Activity implements
     }
 
     // Our method to update the count
-    private void updateCount(int d) {
+    private void updateCount() {
 
-        final int c = d;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                TextView count = (TextView) findViewById(R.id.text);
-                count.setText(Integer.toString(c));
-                count.invalidate();
+                TextView coun = (TextView) findViewById(R.id.text);
+                coun.setText(Integer.toString(theirCount));
+
+
+                float precent = ((float) count)/((float) theirCount);
+
+
+                mTugbar.setPrecentage(precent);
+
+                coun.invalidate();
+                mTugbar.invalidate();
+
             }
         });
     }
